@@ -167,6 +167,7 @@ p{font-size:14px;line-height:1.65;color:var(--muted);}
     <button class="btn btn-ghost full" onclick="showAnalysis()" style="padding:18px;">📊 학습 분석 보기</button>
   </div>
   <div class="setup-link" id="setup-hint">API 키 설정이 필요합니다 · <a onclick="goScreen('setup')">설정하기 →</a></div>
+  <button class="btn btn-ghost full" onclick="goScreen('setup')" style="padding:13px;font-size:13px;color:var(--muted);margin-top:4px;">⚙️ 설정</button>
   <div class="sp"></div>
 </div>
 
@@ -582,14 +583,26 @@ async function generateQuestions() {
       }];
       S.meta.weaknessMode = false;
     } else {
-      msgContent = [
-        { type:'image', source:{ type:'base64', media_type:S.img.mime, data:S.img.b64 }},
-        { type:'text', text:
-`이 학습 자료에서 ${count}개 주관식(단답형) 문제를 생성하세요.
-정답은 간결하게, 다양한 유형과 난이도 포함.
-반드시 JSON으로만 응답: ${jsonSchema}`
-        }
-      ];
+msgContent = [
+  { type:'image', source:{ type:'base64', media_type:S.img.mime, data:S.img.b64 }},
+  { type:'text', text:
+`이미지에 있는 문제들의 **구조와 형식을 정확히 그대로 유지**하면서 숫자/변수만 바꾼 ${count}개의 변형 문제를 생성하세요.
+
+[규칙]
+1. 원본 문제와 완전히 동일한 문장 구조, 연산 종류, 단계 수, 난이도 유지
+   - 예) 원본 "5+3=?" → 변형 "7+2=?" ✓
+   - 예) 원본 "5+3=?" → 변형 "5×3=?" ✗ (연산이 바뀜)
+   - 예) 원본 "두 자리 덧셈" → 변형도 반드시 두 자리 덧셈
+2. 영어 문법 문제면 동일한 문법 패턴 유지, 단어만 교체
+3. 국어/독해 문제면 동일한 질문 유형 유지
+4. 원본에 여러 문제 유형이 있으면 각 유형별로 골고루 변형 생성
+5. 정답은 변형된 숫자/내용에 맞춰 정확히 계산
+6. 원본과 숫자가 똑같은 문제는 만들지 말 것
+
+반드시 JSON으로만 응답: ${jsonSchema}
+topic 필드에는 "원본 문제 N번 변형" 형식으로 표시.`
+  }
+];
     }
 
     const res = await callClaude({
