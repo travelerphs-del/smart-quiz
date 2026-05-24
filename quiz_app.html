@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="theme-color" content="#080F1E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>스마트 문제집</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;background:#080F1E;}
+button{cursor:pointer;font-family:inherit;border:none;background:none;}
+input{font-family:inherit;}
+:root{
+  --bg:#080F1E;--surf:#0E1A2E;--card:#162038;--card2:#1C2840;
+  --accent:#5B8EF0;--accentg:#00C9A7;--success:#2ECE8F;
+  --error:#FF4E6A;--warn:#FFB830;--text:#E8F0FF;--muted:#6A82A8;
+  --border:rgba(91,142,240,.2);--r:16px;--rs:10px;
+}
+#app{height:100%;display:flex;flex-direction:column;max-width:520px;margin:0 auto;position:relative;overflow:hidden;}
+.screen{display:none;flex-direction:column;height:100%;overflow-y:auto;overflow-x:hidden;padding:24px 18px 32px;animation:fadeUp .28s ease both;}
+.screen.active{display:flex;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+h1{font-size:26px;font-weight:900;letter-spacing:-.5px;}
+h2{font-size:20px;font-weight:700;}
+h3{font-size:17px;font-weight:600;color:var(--text);}
+p{font-size:14px;line-height:1.65;color:var(--muted);}
+.card{background:var(--card);border-radius:var(--r);padding:18px;border:1px solid var(--border);}
+.divider{height:1px;background:var(--border);margin:18px 0;}
+.badge{display:inline-flex;align-items:center;gap:6px;background:rgba(0,201,167,.12);border:1px solid rgba(0,201,167,.28);color:var(--accentg);padding:5px 12px;border-radius:100px;font-size:12px;font-weight:700;letter-spacing:.3px;}
+.btn{display:flex;align-items:center;justify-content:center;gap:9px;padding:15px 20px;border-radius:var(--r);font-size:15px;font-weight:700;color:var(--text);transition:transform .15s,opacity .15s,background .15s;touch-action:manipulation;}
+.btn:active{transform:scale(.96);opacity:.9;}
+.btn.full{width:100%;}.btn.lg{padding:19px 22px;font-size:17px;border-radius:18px;}
+.btn-primary{background:var(--accent);}.btn-primary:hover{background:#4A7BE0;}
+.btn-success{background:var(--success);}
+.btn-ghost{background:var(--card);border:1px solid var(--border);}
+.btn-outline{background:transparent;border:2px solid var(--border);color:var(--accent);}
+.btn-warn{background:rgba(255,184,48,.15);border:1px solid rgba(255,184,48,.3);color:var(--warn);}
+.igroup{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;}
+.igroup label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;}
+.ifield{background:var(--surf);border:2px solid var(--border);border-radius:var(--rs);padding:13px 15px;font-size:16px;color:var(--text);width:100%;transition:border-color .2s;}
+.ifield:focus{outline:none;border-color:var(--accent);}
+.ifield::placeholder{color:var(--muted);}
+.back-btn{width:38px;height:38px;background:var(--card);border-radius:9px;color:var(--text);font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid var(--border);}
+.screen-head{display:flex;align-items:center;gap:12px;margin-bottom:22px;flex-shrink:0;}
+.screen-head h2{margin:0;}
+.sp{flex:1;min-height:12px;}
+.mt8{margin-top:8px;}.mt12{margin-top:12px;}.mt16{margin-top:16px;}.mt20{margin-top:20px;}.mt24{margin-top:24px;}
+.mb12{margin-bottom:12px;}.mb16{margin-bottom:16px;}.mb20{margin-bottom:20px;}
+.gap12{display:flex;flex-direction:column;gap:12px;}
+
+/* MAIN */
+#screen-main{justify-content:center;align-items:center;}
+.logo-wrap{text-align:center;margin-bottom:44px;}
+.logo-icon{font-size:56px;display:block;margin-bottom:10px;animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.logo-title{font-size:30px;font-weight:900;letter-spacing:-1px;background:linear-gradient(130deg,var(--accent),var(--accentg));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.logo-sub{font-size:13px;color:var(--muted);margin-top:4px;}
+.main-btns{width:100%;display:flex;flex-direction:column;gap:13px;}
+.btn-hero{background:linear-gradient(130deg,var(--accent),#3A70D8);padding:22px;border-radius:20px;font-size:18px;box-shadow:0 8px 28px rgba(91,142,240,.3);}
+.setup-link{margin-top:18px;font-size:13px;color:var(--muted);text-align:center;}
+.setup-link a{color:var(--accent);text-decoration:underline;cursor:pointer;}
+
+/* SETUP */
+.info-box{background:rgba(255,184,48,.07);border:1px solid rgba(255,184,48,.2);border-radius:var(--rs);padding:14px;}
+.info-box p{font-size:12px;color:#FFB830;line-height:1.8;}
+.key-wrap{position:relative;}
+.key-clear{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;padding:4px 8px;}
+.key-preview{font-size:11px;color:var(--muted);margin-top:5px;font-family:'JetBrains Mono',monospace;min-height:16px;}
+.key-valid{color:var(--success);}
+.key-invalid{color:var(--error);}
+
+/* IMPORT */
+.drop-zone{border:2px dashed var(--border);border-radius:var(--r);min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;flex-shrink:0;}
+.drop-zone:active{border-color:var(--accent);background:rgba(91,142,240,.06);}
+.drop-icon{font-size:44px;}
+.drop-zone h3{text-align:center;}
+.drop-zone p{text-align:center;font-size:13px;}
+#preview-img{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;border-radius:calc(var(--r) - 2px);display:none;}
+.preview-tag{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.6);color:#fff;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;display:none;}
+.compress-info{font-size:11px;color:var(--accentg);margin-top:6px;text-align:center;min-height:16px;}
+
+/* LOADING */
+#screen-loading{justify-content:center;align-items:center;gap:22px;text-align:center;}
+.spinner{width:58px;height:58px;border:4px solid rgba(91,142,240,.2);border-top-color:var(--accent);border-radius:50%;animation:spin .75s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-title{font-size:16px;font-weight:600;color:var(--text);}
+.loading-sub{font-size:13px;color:var(--muted);}
+
+/* COUNT */
+.count-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin:16px 0;}
+.count-card{background:var(--card);border:2px solid var(--border);border-radius:var(--r);padding:22px 10px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:all .2s;}
+.count-card:active,.count-card.sel{border-color:var(--accent);background:rgba(91,142,240,.1);}
+.count-num{font-size:30px;font-weight:900;font-family:'JetBrains Mono',monospace;color:var(--accent);}
+.count-lbl{font-size:13px;color:var(--muted);}
+.count-card-full{background:var(--card);border:2px solid var(--border);border-radius:var(--r);padding:16px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:all .2s;margin-bottom:12px;}
+.count-card-full:active,.count-card-full.sel{border-color:var(--accent);background:rgba(91,142,240,.1);}
+.custom-area{display:none;margin-bottom:12px;}
+
+/* QUIZ */
+.quiz-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-shrink:0;}
+.quiz-counter{font-size:13px;color:var(--muted);font-weight:600;}
+.quiz-counter em{font-style:normal;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:15px;}
+.quiz-topic-badge{font-size:11px;font-weight:700;color:var(--accentg);background:rgba(0,201,167,.1);padding:3px 9px;border-radius:20px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.progress-bar{width:100%;height:6px;background:var(--card2);border-radius:100px;margin-bottom:20px;overflow:hidden;flex-shrink:0;}
+.progress-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--accent),var(--accentg));transition:width .4s ease;}
+.q-card{background:var(--card);border-radius:18px;padding:22px;margin-bottom:16px;border:1px solid var(--border);flex-shrink:0;}
+.q-topic-label{font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;}
+.q-text{font-size:17px;font-weight:500;line-height:1.65;color:var(--text);}
+.fb-card{border-radius:var(--rs);padding:14px 16px;margin-bottom:14px;display:none;animation:slideIn .25s ease;flex-shrink:0;}
+@keyframes slideIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+.fb-error{background:rgba(255,78,106,.1);border:1px solid rgba(255,78,106,.28);}
+.fb-hint{background:rgba(255,184,48,.1);border:1px solid rgba(255,184,48,.28);}
+.fb-title{font-size:13px;font-weight:800;display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.fb-error .fb-title{color:var(--error);}
+.fb-hint .fb-title{color:var(--warn);}
+.fb-body{font-size:13px;color:var(--text);line-height:1.55;}
+.ans-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;}
+#answer-input{font-size:18px;padding:15px 17px;border-radius:var(--r);margin-bottom:14px;}
+
+/* RESULT */
+.score-wrap{text-align:center;padding:28px 0 24px;flex-shrink:0;}
+.score-ring{width:138px;height:138px;border-radius:50%;background:conic-gradient(var(--accent) 0%,var(--card2) 0%);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;transition:background 1s ease;box-shadow:0 0 32px rgba(91,142,240,.2);}
+.score-inner{width:108px;height:108px;background:var(--bg);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.score-pct{font-size:32px;font-weight:900;font-family:'JetBrains Mono',monospace;color:var(--accent);}
+.score-lbl{font-size:12px;color:var(--muted);}
+.stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:22px;flex-shrink:0;}
+.stat-box{background:var(--card);border-radius:var(--rs);padding:14px 8px;text-align:center;border:1px solid var(--border);}
+.stat-num{font-size:26px;font-weight:900;font-family:'JetBrains Mono',monospace;}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:3px;}
+.result-msg{background:var(--card);border-radius:var(--r);padding:16px 18px;margin-bottom:20px;border:1px solid var(--border);flex-shrink:0;}
+.result-msg p{color:var(--text);font-size:14px;font-weight:500;line-height:1.6;}
+
+/* ANALYSIS */
+.analysis-hero{background:linear-gradient(135deg,rgba(91,142,240,.18),rgba(0,201,167,.09));border:1px solid var(--border);border-radius:18px;padding:20px;margin-bottom:18px;flex-shrink:0;}
+.analysis-hero h3{margin-bottom:8px;}
+.analysis-hero p{font-size:13px;}
+.weak-item{background:var(--card);border-radius:var(--rs);padding:13px 15px;margin-bottom:9px;display:flex;align-items:center;gap:11px;border-left:3px solid var(--error);flex-shrink:0;}
+.weak-body{flex:1;overflow:hidden;}
+.weak-name{font-size:14px;font-weight:700;color:var(--text);}
+.weak-desc{font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.weak-badge{background:rgba(255,78,106,.14);color:var(--error);padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;flex-shrink:0;white-space:nowrap;}
+.rec-card{background:rgba(91,142,240,.08);border:1px solid rgba(91,142,240,.2);border-radius:var(--rs);padding:14px;margin:14px 0;flex-shrink:0;}
+.rec-card .tag{font-size:12px;font-weight:800;color:var(--accent);margin-bottom:6px;}
+.rec-card p{font-size:13px;color:var(--text);line-height:1.6;}
+
+/* TOAST */
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--card2);color:var(--text);padding:11px 20px;border-radius:100px;font-size:14px;font-weight:600;border:1px solid var(--border);transition:transform .28s ease;z-index:9999;white-space:nowrap;pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,.4);}
+#toast.show{transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- MAIN -->
+<div id="screen-main" class="screen active">
+  <div class="sp"></div>
+  <div class="logo-wrap">
+    <span class="logo-icon">📚</span>
+    <div class="logo-title">스마트 문제집</div>
+    <div class="logo-sub">AI가 만들어주는 나만의 맞춤 문제집</div>
+  </div>
+  <div class="main-btns">
+    <button class="btn btn-hero full lg" onclick="goImport()">📷 사진으로 문제 만들기</button>
+    <button class="btn btn-ghost full" onclick="showAnalysis()" style="padding:18px;">📊 학습 분석 보기</button>
+  </div>
+  <div class="setup-link" id="setup-hint">API 키 설정이 필요합니다 · <a onclick="goScreen('setup')">설정하기 →</a></div>
+  <div class="sp"></div>
+</div>
+
+<!-- SETUP -->
+<div id="screen-setup" class="screen">
+  <div class="screen-head">
+    <button class="back-btn" onclick="goScreen('main')">←</button>
+    <h2>설정</h2>
+  </div>
+  <div class="card mb16">
+    <p>Claude API 키와 Google Apps Script URL을 입력하세요. 모든 정보는 이 기기에만 저장됩니다.</p>
+  </div>
+  <div class="igroup">
+    <label>Claude API Key</label>
+    <div class="key-wrap">
+      <input type="text" class="ifield" id="api-key-input"
+        placeholder="sk-ant-api03-..."
+        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+        style="padding-right:48px;font-size:12px;font-family:'JetBrains Mono',monospace;letter-spacing:.4px;"
+        oninput="onKeyInput(this.value)"/>
+      <button class="key-clear" onclick="clearApiKey()">✕</button>
+    </div>
+    <div class="key-preview" id="key-preview"></div>
+  </div>
+  <div class="igroup">
+    <label>Google Apps Script URL <span style="color:var(--muted);font-weight:400">(선택)</span></label>
+    <input type="url" class="ifield" id="script-url-input" placeholder="https://script.google.com/macros/s/..."/>
+  </div>
+  <div class="info-box mt12">
+    <p>
+      📌 Apps Script 배포 방법<br>
+      ① Google Sheets → 확장 프로그램 → Apps Script<br>
+      ② quiz_backend.gs 코드 붙여넣기 후 저장<br>
+      ③ 배포 → 새 배포 → 웹 앱<br>
+      &nbsp;&nbsp;&nbsp;실행 계정: 나 / 액세스: 모든 사용자<br>
+      ④ 생성된 URL 위 칸에 붙여넣기
+    </p>
+  </div>
+  <div class="sp"></div>
+  <button class="btn btn-primary full lg mt20" onclick="saveSettings()">저장하기</button>
+</div>
+
+<!-- IMPORT -->
+<div id="screen-import" class="screen">
+  <div class="screen-head">
+    <button class="back-btn" onclick="goScreen('main')">←</button>
+    <h2>학습 자료 가져오기</h2>
+  </div>
+  <p class="mb16">교재, 문제지, 노트 등을 사진으로 찍거나 갤러리에서 불러오세요.</p>
+  <div class="drop-zone" id="drop-zone" onclick="openCamera()">
+    <div id="drop-placeholder" style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+      <div class="drop-icon">📸</div>
+      <h3>사진 추가</h3>
+      <p>탭하면 카메라가 열립니다</p>
+    </div>
+    <img id="preview-img"/>
+    <div class="preview-tag" id="preview-tag">✓ 사진 선택됨</div>
+  </div>
+  <div class="compress-info" id="compress-info"></div>
+  <input type="file" id="photo-input" accept="image/*" capture="environment"
+    style="display:none" onchange="handlePhotoSelect(event)"/>
+  <button class="btn btn-ghost full mt16" onclick="openGallery()">🖼️ 갤러리에서 선택</button>
+  <div class="sp"></div>
+  <button class="btn btn-primary full lg" id="analyze-btn" style="display:none" onclick="startAnalysis()">✨ AI로 분석하기</button>
+</div>
+
+<!-- LOADING -->
+<div id="screen-loading" class="screen">
+  <div class="spinner"></div>
+  <div>
+    <div class="loading-title" id="loading-title">처리 중...</div>
+    <div class="loading-sub" id="loading-sub">잠시만 기다려주세요</div>
+  </div>
+</div>
+
+<!-- COUNT -->
+<div id="screen-count" class="screen">
+  <div class="screen-head">
+    <button class="back-btn" id="count-back-btn" onclick="goScreen('import')">←</button>
+    <h2 id="count-screen-title">문제 수 선택</h2>
+  </div>
+  <div id="detected-badge" class="badge mb16" style="display:none">📚 <span id="subject-text">수학</span> 감지됨</div>
+  <div id="source-card" class="card mb16" style="display:none">
+    <p id="source-text" style="font-size:13px;"></p>
+  </div>
+  <h3 class="mb12">몇 문제를 풀까요?</h3>
+  <div class="count-grid">
+    <div class="count-card" onclick="selectCount(5,this)"><div class="count-num">5</div><div class="count-lbl">문제</div></div>
+    <div class="count-card" onclick="selectCount(10,this)"><div class="count-num">10</div><div class="count-lbl">문제</div></div>
+    <div class="count-card" onclick="selectCount(15,this)"><div class="count-num">15</div><div class="count-lbl">문제</div></div>
+    <div class="count-card" onclick="selectCount(20,this)"><div class="count-num">20</div><div class="count-lbl">문제</div></div>
+  </div>
+  <div class="count-card-full" onclick="toggleCustom(this)">✏️ <span style="font-weight:700;font-size:15px;">직접 입력</span></div>
+  <div class="custom-area" id="custom-area">
+    <input type="number" class="ifield" id="custom-input" placeholder="문제 수 (1~30)" min="1" max="30" oninput="onCustomInput(this.value)"/>
+  </div>
+  <div class="sp"></div>
+  <button class="btn btn-primary full lg" id="start-btn" style="display:none" onclick="generateQuestions()">🚀 문제 생성하기</button>
+</div>
+
+<!-- QUIZ -->
+<div id="screen-quiz" class="screen">
+  <div class="quiz-header">
+    <div class="quiz-counter">문제 <em id="qcur">1</em> / <em id="qtot">10</em></div>
+    <div class="quiz-topic-badge" id="qtopic-badge"></div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+  <div class="q-card">
+    <div class="q-topic-label" id="q-topic-label"></div>
+    <div class="q-text" id="q-text">문제가 여기에 표시됩니다.</div>
+  </div>
+  <div class="fb-card fb-error" id="fb-error">
+    <div class="fb-title">❌ 틀렸어요</div>
+    <div class="fb-body" id="fb-error-body">다시 한번 생각해보세요!</div>
+  </div>
+  <div class="fb-card fb-hint" id="fb-hint">
+    <div class="fb-title">💡 힌트</div>
+    <div class="fb-body" id="fb-hint-body">힌트 생성 중...</div>
+  </div>
+  <div class="ans-label">정답 입력</div>
+  <input type="text" class="ifield" id="answer-input"
+    placeholder="답을 입력하세요..."
+    onkeydown="if(event.key==='Enter')submitAnswer()"
+    autocomplete="off" autocorrect="off" spellcheck="false"/>
+  <button class="btn btn-primary full lg" id="submit-btn" onclick="submitAnswer()">✓ 제출</button>
+</div>
+
+<!-- RESULT -->
+<div id="screen-result" class="screen">
+  <h2 class="mb16">학습 완료! 🎉</h2>
+  <div class="score-wrap">
+    <div class="score-ring" id="score-ring">
+      <div class="score-inner">
+        <div class="score-pct" id="score-pct">0%</div>
+        <div class="score-lbl">정답률</div>
+      </div>
+    </div>
+  </div>
+  <div class="stat-row">
+    <div class="stat-box"><div class="stat-num" id="stat-total" style="color:var(--accent)">0</div><div class="stat-lbl">총 문제</div></div>
+    <div class="stat-box"><div class="stat-num" id="stat-correct" style="color:var(--success)">0</div><div class="stat-lbl">정답</div></div>
+    <div class="stat-box"><div class="stat-num" id="stat-wrong" style="color:var(--error)">0</div><div class="stat-lbl">오답</div></div>
+  </div>
+  <div class="result-msg"><p id="result-msg-text"></p></div>
+  <div class="gap12">
+    <button class="btn btn-primary full" onclick="goScreen('main')">🏠 메인으로 돌아가기</button>
+    <button class="btn btn-ghost full" onclick="showAnalysis()">📊 학습 분석 보기</button>
+  </div>
+</div>
+
+<!-- ANALYSIS -->
+<div id="screen-analysis" class="screen">
+  <div class="screen-head">
+    <button class="back-btn" onclick="goScreen('main')">←</button>
+    <h2>학습 분석</h2>
+  </div>
+  <div class="analysis-hero">
+    <h3 id="ana-title">분석 결과</h3>
+    <p id="ana-summary" class="mt8"></p>
+  </div>
+  <h3 class="mb12">🎯 취약한 유형</h3>
+  <div id="weak-list"></div>
+  <div class="rec-card" id="rec-card" style="display:none">
+    <div class="tag">💬 AI 추천 학습 방향</div>
+    <p id="rec-text"></p>
+  </div>
+  <div class="divider"></div>
+  <button class="btn btn-warn full lg" id="gen-weak-btn" onclick="startWeaknessMode()" style="display:none">🎯 취약 유형 집중 문제 풀기</button>
+  <div style="min-height:20px;"></div>
+</div>
+
+</div><!-- #app -->
+<div id="toast"></div>
+
+<script>
+// ──────────────────────────────────────────────────────────────
+// WORK LOG
+// v1.0  Initial build - Multi-screen SPA, photo import, Claude API,
+//       quiz flow, hints, Sheets integration, analysis
+// v1.1  Android fixes:
+//       - anthropic-dangerous-direct-browser-access 헤더 추가
+//       - Canvas 이미지 압축 (max 1280px, JPEG 0.82)
+//       - API 키 입력창 text 타입 변경 + sanitize + sk-ant- 검증
+//       - 저장 키 미리보기 + clearApiKey()
+// ──────────────────────────────────────────────────────────────
+
+const S = {
+  cfg: { key: '', scriptUrl: '' },
+  img: { b64: '', mime: 'image/jpeg' },
+  meta: { subject: '', desc: '', weaknessMode: false, weaknessData: null },
+  session: { id: '', questions: [], idx: 0, results: [] },
+  curQ: { wrongCount: 0, wrongs: [] },
+  selectedCount: 0,
+};
+
+// ── INIT ─────────────────────────────────────────────────────
+;(function(){
+  S.cfg.key       = localStorage.getItem('sq_key') || '';
+  S.cfg.scriptUrl = localStorage.getItem('sq_url') || '';
+  if (S.cfg.key) {
+    document.getElementById('api-key-input').value = S.cfg.key;
+    document.getElementById('setup-hint').style.display = 'none';
+    showKeyPreview(S.cfg.key);
+  }
+  if (S.cfg.scriptUrl)
+    document.getElementById('script-url-input').value = S.cfg.scriptUrl;
+})();
+
+// ── NAV ──────────────────────────────────────────────────────
+function goScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('screen-' + id);
+  el.classList.add('active');
+  el.scrollTop = 0;
+}
+
+// ── SETTINGS ─────────────────────────────────────────────────
+function onKeyInput(val) {
+  const clean = val.replace(/\s/g,'').replace(/[^\x20-\x7E]/g,'');
+  if (clean !== val) document.getElementById('api-key-input').value = clean;
+  showKeyPreview(clean);
+}
+
+function showKeyPreview(key) {
+  const el = document.getElementById('key-preview');
+  if (!key) { el.textContent = ''; el.className = 'key-preview'; return; }
+  if (key.startsWith('sk-ant-')) {
+    el.textContent = '✓ ' + key.slice(0,14) + '...' + key.slice(-4);
+    el.className = 'key-preview key-valid';
+  } else {
+    el.textContent = '⚠ sk-ant- 로 시작해야 합니다';
+    el.className = 'key-preview key-invalid';
+  }
+}
+
+function clearApiKey() {
+  document.getElementById('api-key-input').value = '';
+  document.getElementById('key-preview').textContent = '';
+  document.getElementById('key-preview').className = 'key-preview';
+  localStorage.removeItem('sq_key');
+  S.cfg.key = '';
+  toast('API 키 초기화됨');
+}
+
+function saveSettings() {
+  let key = document.getElementById('api-key-input').value;
+  key = key.replace(/\s/g,'').replace(/[^\x20-\x7E]/g,'').trim();
+  const url = document.getElementById('script-url-input').value.trim();
+
+  if (!key) { toast('❌ API 키를 입력해주세요'); return; }
+  if (!key.startsWith('sk-ant-')) {
+    toast('❌ 키 형식이 잘못됐어요 (sk-ant-로 시작)'); return;
+  }
+  S.cfg.key = key; S.cfg.scriptUrl = url;
+  localStorage.setItem('sq_key', key);
+  if (url) localStorage.setItem('sq_url', url);
+  showKeyPreview(key);
+  document.getElementById('setup-hint').style.display = 'none';
+  toast('✅ 저장 완료');
+  setTimeout(() => goScreen('main'), 700);
+}
+
+// ── IMPORT ───────────────────────────────────────────────────
+function goImport() {
+  if (!S.cfg.key) { toast('먼저 API 키를 설정해주세요'); goScreen('setup'); return; }
+  S.img.b64 = ''; S.img.mime = 'image/jpeg';
+  document.getElementById('preview-img').style.display = 'none';
+  document.getElementById('drop-placeholder').style.display = 'flex';
+  document.getElementById('preview-tag').style.display = 'none';
+  document.getElementById('analyze-btn').style.display = 'none';
+  document.getElementById('compress-info').textContent = '';
+  document.getElementById('photo-input').value = '';
+  goScreen('import');
+}
+
+function openCamera() {
+  const inp = document.getElementById('photo-input');
+  inp.setAttribute('capture','environment'); inp.click();
+}
+function openGallery() {
+  const inp = document.getElementById('photo-input');
+  inp.removeAttribute('capture'); inp.click();
+}
+
+// v1.1 FIX: Canvas 압축 (Android 대용량 카메라 사진 대응)
+function handlePhotoSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  document.getElementById('compress-info').textContent = '이미지 최적화 중...';
+
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const original = new Image();
+    original.onload = () => {
+      const MAX = 1280;
+      let w = original.width, h = original.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else        { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(original, 0, 0, w, h);
+
+      const compressed = canvas.toDataURL('image/jpeg', 0.82);
+      S.img.b64  = compressed.split(',')[1];
+      S.img.mime = 'image/jpeg';
+
+      const kb = Math.round(S.img.b64.length * 0.75 / 1024);
+      document.getElementById('compress-info').textContent =
+        `✓ 최적화 완료 — ${w}×${h}px · ${kb < 1024 ? kb+'KB' : (kb/1024).toFixed(1)+'MB'}`;
+
+      const img = document.getElementById('preview-img');
+      img.src = compressed;
+      img.style.display = 'block';
+      document.getElementById('drop-placeholder').style.display = 'none';
+      document.getElementById('preview-tag').style.display = 'block';
+      document.getElementById('analyze-btn').style.display = 'flex';
+    };
+    original.onerror = () => { toast('❌ 이미지를 읽을 수 없어요'); };
+    original.src = ev.target.result;
+  };
+  reader.onerror = () => { toast('❌ 파일을 읽을 수 없어요'); };
+  reader.readAsDataURL(file);
+}
+
+// ── STEP 1: IMAGE ANALYSIS ───────────────────────────────────
+async function startAnalysis() {
+  if (!S.img.b64) { toast('사진을 먼저 추가해주세요'); return; }
+  goScreen('loading');
+  setLoading('📸 학습 자료 분석 중...','이미지에서 과목과 내용을 파악하고 있어요');
+  try {
+    const res = await callClaude({
+      system: '교육 자료 분석 전문가입니다. JSON 형식으로만 응답하세요.',
+      max_tokens: 400,
+      messages:[{ role:'user', content:[
+        { type:'image', source:{ type:'base64', media_type:S.img.mime, data:S.img.b64 }},
+        { type:'text', text:
+`이 학습 자료 이미지를 분석하고 아래 JSON 형식으로만 응답하세요.
+{"subject_type":"수학 또는 영어 또는 국어 또는 과학 또는 사회 또는 기타","source_desc":"학습 자료 내용 요약 50자 이내","is_valid":true}
+학습 자료가 아니면 is_valid를 false로 설정하세요.`
+        }
+      ]}]
+    });
+    const p = parseJSON(res);
+    if (!p) throw new Error('응답 파싱 실패');
+    if (!p.is_valid) { toast('❌ 학습 자료를 인식하지 못했어요'); goScreen('import'); return; }
+    S.meta.subject = p.subject_type || '기타';
+    S.meta.desc    = p.source_desc  || '';
+    S.meta.weaknessMode = false;
+    document.getElementById('subject-text').textContent = S.meta.subject;
+    document.getElementById('detected-badge').style.display = 'inline-flex';
+    document.getElementById('source-text').textContent = S.meta.desc;
+    document.getElementById('source-card').style.display = 'block';
+    document.getElementById('count-screen-title').textContent = '문제 수 선택';
+    document.getElementById('count-back-btn').onclick = () => goScreen('import');
+    resetCountScreen();
+    goScreen('count');
+  } catch(err) {
+    toast('❌ 분석 실패: ' + err.message);
+    goScreen('import');
+  }
+}
+
+// ── COUNT ────────────────────────────────────────────────────
+function resetCountScreen() {
+  S.selectedCount = 0;
+  document.querySelectorAll('.count-card,.count-card-full').forEach(c => c.classList.remove('sel'));
+  document.getElementById('custom-area').style.display = 'none';
+  document.getElementById('custom-input').value = '';
+  document.getElementById('start-btn').style.display = 'none';
+}
+function selectCount(n, el) {
+  S.selectedCount = n;
+  document.querySelectorAll('.count-card,.count-card-full').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('custom-area').style.display = 'none';
+  document.getElementById('start-btn').style.display = 'flex';
+}
+function toggleCustom(el) {
+  const area = document.getElementById('custom-area');
+  document.querySelectorAll('.count-card,.count-card-full').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  const show = area.style.display !== 'block';
+  area.style.display = show ? 'block' : 'none';
+  if (show) document.getElementById('custom-input').focus();
+  document.getElementById('start-btn').style.display = 'none';
+}
+function onCustomInput(v) {
+  const n = parseInt(v);
+  S.selectedCount = (n >= 1 && n <= 30) ? n : 0;
+  document.getElementById('start-btn').style.display = S.selectedCount ? 'flex' : 'none';
+}
+
+// ── GENERATE QUESTIONS ───────────────────────────────────────
+async function generateQuestions() {
+  const count = S.selectedCount;
+  if (!count) { toast('문제 수를 선택해주세요'); return; }
+  goScreen('loading');
+  setLoading('✨ 문제 생성 중...',`${count}개의 주관식 문제를 만들고 있어요`);
+  try {
+    let msgContent;
+    const jsonSchema = `{"subject_type":"과목","source_desc":"자료 요약","questions":[{"q":"문제","answer":"정답","topic":"유형","level":"쉬움|보통|어려움"}]}`;
+
+    if (S.meta.weaknessMode && S.meta.weaknessData) {
+      const wd = S.meta.weaknessData;
+      msgContent = [{ type:'text', text:
+`학생 취약 유형: ${wd.weakness_summary}
+취약 주제: ${(wd.topics||[]).map(t=>t.name).join(', ')}
+과목: ${S.meta.subject}
+위 취약 유형 집중 연습용 ${count}개 주관식 문제를 생성하세요.
+반드시 JSON으로만 응답: ${jsonSchema}`
+      }];
+      S.meta.weaknessMode = false;
+    } else {
+      msgContent = [
+        { type:'image', source:{ type:'base64', media_type:S.img.mime, data:S.img.b64 }},
+        { type:'text', text:
+`이 학습 자료에서 ${count}개 주관식(단답형) 문제를 생성하세요.
+정답은 간결하게, 다양한 유형과 난이도 포함.
+반드시 JSON으로만 응답: ${jsonSchema}`
+        }
+      ];
+    }
+
+    const res = await callClaude({
+      system: '교육 전문가. 주관식 문제 생성. JSON으로만 응답.',
+      max_tokens: 2500,
+      messages: [{ role:'user', content: msgContent }],
+    });
+    const p = parseJSON(res);
+    if (!p?.questions?.length) throw new Error('문제를 생성하지 못했습니다');
+
+    S.session.id        = 'sess_' + Date.now();
+    S.session.questions = p.questions.slice(0, count);
+    S.session.idx       = 0;
+    S.session.results   = [];
+    S.meta.subject = p.subject_type || S.meta.subject;
+    S.meta.desc    = p.source_desc  || S.meta.desc;
+
+    showQuestion(0);
+    goScreen('quiz');
+  } catch(err) {
+    toast('❌ 문제 생성 실패: ' + err.message);
+    goScreen('count');
+  }
+}
+
+// ── QUIZ DISPLAY ─────────────────────────────────────────────
+function showQuestion(idx) {
+  const q = S.session.questions[idx];
+  const total = S.session.questions.length;
+  S.curQ.wrongCount = 0; S.curQ.wrongs = [];
+  document.getElementById('qcur').textContent  = idx + 1;
+  document.getElementById('qtot').textContent  = total;
+  document.getElementById('q-topic-label').textContent = q.topic || '';
+  document.getElementById('qtopic-badge').textContent  = q.topic || '';
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('answer-input').value = '';
+  document.getElementById('prog-fill').style.width = Math.round((idx / total) * 100) + '%';
+  document.getElementById('fb-error').style.display = 'none';
+  document.getElementById('fb-hint').style.display  = 'none';
+  document.getElementById('submit-btn').disabled    = false;
+  document.getElementById('submit-btn').textContent = '✓ 제출';
+  setTimeout(() => document.getElementById('answer-input').focus(), 300);
+}
+
+// ── QUIZ SUBMIT ──────────────────────────────────────────────
+async function submitAnswer() {
+  const inp = document.getElementById('answer-input');
+  const ans = inp.value.trim();
+  if (!ans) { toast('답을 입력해주세요'); return; }
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true; btn.textContent = '채점 중...';
+  const q = S.session.questions[S.session.idx];
+  try {
+    const res = await checkAnswer(q.q, q.answer, ans);
+    if (res.correct) onCorrect(q, ans);
+    else { S.curQ.wrongCount++; S.curQ.wrongs.push(ans); onWrong(q, ans, res.feedback); }
+  } catch(e) {
+    if (norm(ans) === norm(q.answer)) onCorrect(q, ans);
+    else { S.curQ.wrongCount++; S.curQ.wrongs.push(ans); onWrong(q, ans, ''); }
+  }
+  btn.disabled = false; btn.textContent = '✓ 제출';
+}
+
+function onCorrect(q, studentAns) {
+  const result = { q:q.q, answer:q.answer, studentAnswer:studentAns,
+    correct:true, wrongCount:S.curQ.wrongCount, topic:q.topic||'' };
+  S.session.results.push(result);
+  saveQToSheet(result);
+  document.getElementById('fb-error').style.display = 'none';
+  document.getElementById('fb-hint').style.display  = 'none';
+  toast('✅ 정답!');
+  setTimeout(() => {
+    const next = S.session.idx + 1;
+    if (next >= S.session.questions.length) finishQuiz();
+    else { S.session.idx = next; showQuestion(next); }
+  }, 750);
+}
+
+async function onWrong(q, studentAns, feedback) {
+  document.getElementById('fb-error').style.display = 'block';
+  document.getElementById('fb-error-body').textContent = feedback || '다시 한번 생각해보세요!';
+  document.getElementById('answer-input').value = '';
+  document.getElementById('answer-input').focus();
+  if (S.curQ.wrongCount >= 2) {
+    const hintEl = document.getElementById('fb-hint');
+    const hintBody = document.getElementById('fb-hint-body');
+    hintEl.style.display = 'block';
+    hintBody.textContent = '힌트 생성 중...';
+    try {
+      const h = await generateHint(q.q, q.answer, S.curQ.wrongs);
+      hintBody.textContent = h.hint || '정답을 다시 한번 꼼꼼히 확인해보세요.';
+    } catch(e) {
+      hintBody.textContent = '정답을 다시 한번 꼼꼼히 확인해보세요.';
+    }
+  }
+}
+
+// ── FINISH ───────────────────────────────────────────────────
+async function finishQuiz() {
+  const res    = S.session.results;
+  const total  = res.length;
+  const correct= res.filter(r => r.correct).length;
+  const wrongs = res.reduce((s,r) => s + r.wrongCount, 0);
+  const pct    = Math.round((correct / total) * 100);
+  saveSessionToSheet({ session_id:S.session.id, date:new Date().toISOString(),
+    source_desc:S.meta.desc, total_questions:total, correct,
+    wrong_attempts_total:wrongs, subject_type:S.meta.subject });
+  document.getElementById('score-pct').textContent = pct + '%';
+  document.getElementById('prog-fill').style.width = '100%';
+  setTimeout(() => {
+    document.getElementById('score-ring').style.background =
+      `conic-gradient(var(--accent) ${pct}%, var(--card2) 0%)`;
+  }, 200);
+  document.getElementById('stat-total').textContent   = total;
+  document.getElementById('stat-correct').textContent = correct;
+  document.getElementById('stat-wrong').textContent   = total - correct;
+  const msgs = [[90,'완벽해요! 🌟 이 내용은 완전히 마스터했어요.'],
+    [70,'잘 했어요! 👍 조금만 더 연습하면 완벽해요.'],
+    [50,'절반은 맞혔어요. 💪 취약 유형을 더 연습해봐요.'],
+    [0,'어려웠나요? 😊 학습 분석으로 취약 유형을 확인해보세요.']];
+  document.getElementById('result-msg-text').textContent =
+    (msgs.find(([min]) => pct >= min) || msgs[msgs.length-1])[1];
+  goScreen('result');
+}
+
+// ── ANALYSIS ─────────────────────────────────────────────────
+async function showAnalysis() {
+  if (!S.cfg.key) { toast('API 키를 먼저 설정해주세요'); goScreen('setup'); return; }
+  goScreen('loading');
+  setLoading('📊 학습 기록 분석 중...','전체 풀이 기록을 AI가 분석하고 있어요');
+  try {
+    let qs = [];
+    if (S.cfg.scriptUrl) {
+      const data = await fetchSheet('getAnalysisData');
+      if (data?.questions?.length) qs = data.questions;
+    }
+    if (!qs.length && S.session.results.length) {
+      qs = S.session.results.map(r => ({
+        question:r.q, correct_answer:r.answer,
+        is_correct:r.correct?'TRUE':'FALSE',
+        wrong_count:r.wrongCount, topic:r.topic
+      }));
+    }
+    if (!qs.length) { toast('분석할 기록이 없어요. 먼저 문제를 풀어주세요!'); goScreen('main'); return; }
+
+    const res = await callClaude({
+      system: '교육 분석 전문가. JSON으로만 응답.',
+      max_tokens: 900,
+      messages:[{ role:'user', content:
+`학생 풀이 기록 (최근 ${Math.min(qs.length,100)}건):
+${JSON.stringify(qs.slice(-100))}
+취약 유형 분석 후 JSON으로만 응답:
+{"weakness_summary":"취약 유형 설명 2~3문장","topics":[{"name":"주제명","wrong_rate":75,"description":"어려워하는 이유"}],"recommendation":"학습 방향 추천 2~3문장"}
+취약 유형 없으면 topics를 빈 배열로.`
+      }]
+    });
+    const p = parseJSON(res);
+    if (!p) throw new Error('분석 결과 파싱 실패');
+    S.meta.weaknessData = p;
+
+    document.getElementById('ana-title').textContent = `${S.meta.subject||'전체'} 학습 분석`;
+    document.getElementById('ana-summary').textContent = p.weakness_summary || '';
+    document.getElementById('rec-text').textContent = p.recommendation || '';
+    document.getElementById('rec-card').style.display = p.recommendation ? 'block' : 'none';
+
+    const list = document.getElementById('weak-list');
+    list.innerHTML = '';
+    if (p.topics?.length) {
+      p.topics.forEach(t => {
+        const div = document.createElement('div');
+        div.className = 'weak-item';
+        div.innerHTML = `<span style="font-size:19px">📌</span>
+          <div class="weak-body">
+            <div class="weak-name">${esc(t.name)}</div>
+            <div class="weak-desc">${esc(t.description)}</div>
+          </div>
+          <div class="weak-badge">${t.wrong_rate||0}% 오답</div>`;
+        list.appendChild(div);
+      });
+      document.getElementById('gen-weak-btn').style.display = 'flex';
+    } else {
+      list.innerHTML = '<p style="text-align:center;padding:20px">취약 유형 없음 🎉</p>';
+      document.getElementById('gen-weak-btn').style.display = 'none';
+    }
+    goScreen('analysis');
+  } catch(err) {
+    toast('❌ 분석 실패: ' + err.message);
+    goScreen('main');
+  }
+}
+
+function startWeaknessMode() {
+  S.meta.weaknessMode = true;
+  document.getElementById('count-screen-title').textContent = '취약 유형 문제 수';
+  document.getElementById('count-back-btn').onclick = () => goScreen('analysis');
+  document.getElementById('detected-badge').style.display = 'none';
+  document.getElementById('source-card').style.display = 'block';
+  document.getElementById('source-text').textContent = '📌 취약 유형 집중 문제';
+  resetCountScreen();
+  goScreen('count');
+}
+
+// ── CLAUDE API ───────────────────────────────────────────────
+// v1.1 FIX: anthropic-dangerous-direct-browser-access 헤더 추가
+async function callClaude({ messages, system, max_tokens=1000 }) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': S.cfg.key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens, system, messages }),
+  });
+  if (!r.ok) {
+    const e = await r.json().catch(()=>({}));
+    throw new Error(e.error?.message || `API 오류 (${r.status})`);
+  }
+  const d = await r.json();
+  return d.content?.[0]?.text || '';
+}
+
+async function checkAnswer(question, correct, student) {
+  if (norm(student) === norm(correct)) return { correct:true, feedback:'' };
+  const res = await callClaude({
+    system: '채점 전문가. JSON으로만 응답.',
+    max_tokens: 150,
+    messages:[{ role:'user', content:
+`문제: ${question}\n정답: ${correct}\n학생 답: ${student}
+의미상 동일하면 correct:true, 아니면 false.
+{"correct":true,"feedback":"오답 시 짧은 피드백 20자 이내"}`
+    }]
+  });
+  return parseJSON(res) || { correct: norm(student)===norm(correct), feedback:'다시 생각해보세요' };
+}
+
+async function generateHint(question, correct, wrongs) {
+  const res = await callClaude({
+    system: '교육 전문가. JSON으로만 응답.',
+    max_tokens: 220,
+    messages:[{ role:'user', content:
+`문제: ${question}\n정답: ${correct}\n학생 오답: ${wrongs.join(' / ')}
+학생이 어디서 착각하는지 분석하고 힌트 제공 (정답 직접 노출 금지).
+{"mistake_analysis":"착각 부분 30자","hint":"힌트 60자 이내"}`
+    }]
+  });
+  return parseJSON(res) || { hint:'정답을 다시 한번 꼼꼼히 생각해보세요.' };
+}
+
+// ── SHEETS ───────────────────────────────────────────────────
+async function saveSessionToSheet(d) {
+  if (!S.cfg.scriptUrl) return;
+  try { await fetch(S.cfg.scriptUrl,{method:'POST',body:JSON.stringify({action:'saveSession',...d})}); }
+  catch(e){ console.warn('Sheet session save failed',e); }
+}
+async function saveQToSheet(r) {
+  if (!S.cfg.scriptUrl) return;
+  try {
+    await fetch(S.cfg.scriptUrl,{method:'POST',body:JSON.stringify({
+      action:'saveQuestion', session_id:S.session.id,
+      q_index:S.session.results.length-1,
+      question:r.q, correct_answer:r.answer, student_answer:r.studentAnswer,
+      is_correct:r.correct, wrong_count:r.wrongCount, topic:r.topic,
+    })});
+  } catch(e){ console.warn('Sheet question save failed',e); }
+}
+async function fetchSheet(action) {
+  if (!S.cfg.scriptUrl) return null;
+  try {
+    const r = await fetch(`${S.cfg.scriptUrl}?action=${action}`);
+    const d = await r.json();
+    return d.success ? d.data : null;
+  } catch(e){ return null; }
+}
+
+// ── HELPERS ──────────────────────────────────────────────────
+function setLoading(title, sub) {
+  document.getElementById('loading-title').textContent = title;
+  document.getElementById('loading-sub').textContent   = sub;
+}
+function norm(s) {
+  return String(s).trim().toLowerCase().replace(/\s+/g,' ').replace(/[.,!?;:]/g,'');
+}
+function parseJSON(text) {
+  try { return JSON.parse(text.replace(/```json?\n?/g,'').replace(/```/g,'').trim()); }
+  catch {
+    const m = text.match(/\{[\s\S]*\}/);
+    if (m) { try { return JSON.parse(m[0]); } catch {} }
+    return null;
+  }
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+let _tt;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(_tt); _tt = setTimeout(() => el.classList.remove('show'), 2400);
+}
+</script>
+</body>
+</html>
